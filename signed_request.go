@@ -20,26 +20,6 @@ type SignedRequest struct {
 	Config *Cfg
 }
 
-func formatShortDate(date time.Time) string {
-	return date.Format("20060102")
-}
-
-func formatLongDate(date time.Time) string {
-	return date.Format("20060102T150405Z")
-}
-
-func hmacHash(key, content []byte) []byte {
-	mac := hmac.New(sha256.New, key)
-	mac.Write(content)
-	return mac.Sum(nil)
-}
-
-func signPayload(payload string) string {
-	hash := sha256.New()
-	io.WriteString(hash, payload)
-	return hex.EncodeToString(hash.Sum(nil))
-}
-
 func NewSignedRequest(method string, url string)(
 	signedRequest *SignedRequest, err error,
 ) {
@@ -159,6 +139,26 @@ func (req *SignedRequest) Header() http.Header {
 
 func (req *SignedRequest) AddHeader(name string, value string) {
 	req.request.Header.Add(name, value)
+}
+
+func formatShortDate(date time.Time) string {
+	return date.Format("20060102")
+}
+
+func formatLongDate(date time.Time) string {
+	return date.Format("20060102T150405Z")
+}
+
+func hmacHash(key, content []byte) []byte {
+	mac := hmac.New(sha256.New, key)
+	mac.Write(content)
+	return mac.Sum(nil)
+}
+
+func signPayload(payload string) string {
+	hash := sha256.New()
+	io.WriteString(hash, payload)
+	return hex.EncodeToString(hash.Sum(nil))
 }
 
 func getCanonicalHeaders(data map[string][]string) string {
