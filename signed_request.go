@@ -10,6 +10,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
+	"crypto/hmac"
 )
 
 type SignedRequest struct {
@@ -17,6 +18,20 @@ type SignedRequest struct {
 	client http.Client
 	request http.Request
 	Config *Cfg
+}
+
+func formatShortDate(date time.Time) string {
+	return date.Format("20060102")
+}
+
+func formatLongDate(date time.Time) string {
+	return date.Format("20060102T150405Z")
+}
+
+func hmacHash(key, content []byte) []byte {
+	mac := hmac.New(sha256.New, key)
+	mac.Write(content)
+	return mac.Sum(nil)
 }
 
 func signPayload(payload string) string {
@@ -93,10 +108,28 @@ func (req *SignedRequest) HashedCanonicalRequest(payload string) string {
 func (req *SignedRequest) StringToSign(payload string) string {
 	now := time.Now()
 	return "AWS4-HMAC-SHA256\n" +
-		now.Format("20060102T150405Z") + "\n" +
-		now.Format("20060102") + "/" + req.Config.Region +
+		formatLongDate(now) + "\n" +
+		formatShortDate(now) + "/" + req.Config.Region +
 		"/example.com/aws4_request\n" +
 		req.HashedCanonicalRequest(payload)
+}
+
+func (req *SignedRequest) DerivedSigningKey() []byte {
+	now := time.Now()
+	secretKey := "AWS4" + req.Config.SecretKey
+	region := req.Config.Region
+
+	kDate := hmacHash([]byte(secretKey), []byte(formatShortDate(now)))
+	kRegion := hmacHash(kDate, []byte(region))
+	kService := hmacHash(kRegion, []byte("example.com"))
+
+	return hmacHash(kService, []byte("aws4_request"))
+}
+
+func (req *SignedRequest) Signature(payload string) string {
+	stringToSign := req.StringToSign(payload)
+	hashedSignature := hmacHash(req.DerivedSigningKey(), []byte(stringToSign))
+	return hex.EncodeToString(hashedSignature)
 }
 
 func (req *SignedRequest) Header() http.Header {
@@ -121,9 +154,8 @@ func getCanonicalHeaders(data map[string][]string) string {
 		val := data[k]
 
 		valStr := strings.Join(val, "")
-		if strings.HasPrefix(valStr, `"`) && strings.HasSuffix(valStr, `"`) {
-			valStr = valStr
-		} else {
+
+		if !(strings.HasPrefix(valStr, `"`) && strings.HasSuffix(valStr, `"`)) {
 			valStr = whitespaceTrimPattern.ReplaceAllString(valStr, " ")
 			valStr = strings.TrimSpace(valStr)
 		}
