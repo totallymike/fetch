@@ -24,7 +24,9 @@ func signPayload(payload string) string {
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
-func NewSignedRequest(method string, url string) (signedRequest *SignedRequest, err error) {
+func NewSignedRequest(method string, url string)(
+	signedRequest *SignedRequest, err error,
+) {
 	signedRequest = &SignedRequest{}
 
 	req, err := http.NewRequest("GET",
