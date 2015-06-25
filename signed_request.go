@@ -55,10 +55,8 @@ func (req *SignedRequest) Perform(payload string) (response *http.Response, err 
 		req.client = &http.Client{}
 	}
 
-	canonicalRequest := req.CanonicalRequest(payload)
 	req.AddAuthorizationHeader(payload)
 
-	fmt.Printf("CANONICAL REQUEST:\n%s\n\n", canonicalRequest)
 	response, err = req.client.Do(&req.request)
 	return
 }
@@ -118,7 +116,6 @@ func (req *SignedRequest) AuthorizationHeader(payload string) string {
 		region,
 		service)
 
-	fmt.Printf("String To Sign:\n%s\n\n", req.StringToSign(payload))
 	return fmt.Sprintf(
 		"AWS4-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s",
 		req.Config.AccessKey,
