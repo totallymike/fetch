@@ -101,6 +101,27 @@ func (req *SignedRequest) CanonicalRequest(payload string) string {
 	)
 }
 
+func (req *SignedRequest) AddAuthorizationHeader(payload string) {
+	req.Header().Add("Authorization", req.AuthorizationHeader(payload))
+}
+
+func (req *SignedRequest) AuthorizationHeader(payload string) string {
+	nowString := formatShortDate(time.Now())
+	region := req.Config.Region
+
+	credentialScope := fmt.Sprintf("%s/%s/%s/aws4_request",
+		nowString,
+		region,
+		"example.com")
+
+	return fmt.Sprintf(
+		"AWS4-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s",
+		req.Config.AccessKey,
+		credentialScope,
+		req.SignedHeaders(),
+		req.Signature(payload))
+}
+
 func (req *SignedRequest) HashedCanonicalRequest(payload string) string {
 	return signPayload(req.CanonicalRequest(payload))
 }
