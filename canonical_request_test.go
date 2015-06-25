@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func newRequest() (signedRequest *SignedRequest) {
@@ -41,10 +42,15 @@ func TestCanonicalHeaders(t *testing.T) {
 
 	expected := "content-type:application/vnd.api+json\n" +
 		"host:www.example.com\n" +
-		"x-amz-date:" + time.Now().Format("20060102T150405Z")
+		"x-amz-date:" + time.Now().UTC().Format("20060102T150405Z") + "\n"
 
 	if req.CanonicalHeaders() != expected {
-		t.Errorf("%s != %s\n", req.CanonicalHeaders(), expected)
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(req.CanonicalHeaders(), expected, true)
+		for _, d := range diffs {
+			t.Logf(" %v\n", d.Text)
+		}
+		t.Fail()
 	}
 }
 
@@ -56,11 +62,17 @@ func TestCanonicalHeadersWithSpaces(t *testing.T) {
 
 	expected := "bar:oh yeah\ncontent-type:application/vnd.api+json\n" +
 		"foo:\"   oh  yeah\"\nhost:www.example.com\n" +
-		"x-amz-date:" + time.Now().Format("20060102T150405Z")
+		"x-amz-date:" + time.Now().UTC().Format("20060102T150405Z") + "\n"
 
 
 	if req.CanonicalHeaders() != expected {
-		t.Errorf("%s != %s\n", req.CanonicalHeaders(), expected)
+		dmp := diffmatchpatch.New()
+		diffs := dmp.DiffMain(req.CanonicalHeaders(), expected, true)
+		for _, d := range diffs {
+			t.Logf("%s\n", d.Text)
+		}
+
+		t.Errorf("\n%s != %s\n", req.CanonicalHeaders(), expected)
 	}
 }
 
@@ -103,7 +115,7 @@ func TestCanonicalRequest(t *testing.T) {
 		"baz=foo&\nfoo=bar\n" +
 		"content-type:application/vnd.api+json\n" +
 		"host:www.example.com\n" +
-		"x-amz-date:" + time.Now().Format("20060102T150405Z") + "\n" +
+		"x-amz-date:" + time.Now().UTC().Format("20060102T150405Z") + "\n" + "\n" +
 		"content-type;host;x-amz-date\n" +
 		signedPayload
 

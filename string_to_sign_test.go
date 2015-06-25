@@ -7,13 +7,14 @@ import (
 
 func TestStringToSign(t *testing.T) {
 	t.Parallel()
+	now := time.Now().UTC()
 	req := newRequest()
 
 	req.Config.Region = "us-east-1"
 
 	expected := "AWS4-HMAC-SHA256\n" +
-		time.Now().Format("20060102T150405Z") + "\n" +
-		time.Now().Format("20060102") + "/us-east-1/example.com/aws4_request\n" +
+		now.Format("20060102T150405Z") + "\n" +
+		now.Format("20060102") + "/us-east-1/www/aws4_request\n" +
 		req.HashedCanonicalRequest("")
 
 	actual := req.StringToSign("")

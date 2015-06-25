@@ -34,7 +34,7 @@ func TestDerivededSigningKey(t *testing.T) {
 	req := newRequest()
 
 	mac := hmac.New(sha256.New, []byte("AWS4foobar"))
-	mac.Write([]byte(formatShortDate(time.Now())))
+	mac.Write([]byte(formatShortDate(time.Now().UTC())))
 	kDate := mac.Sum(nil)
 
 	mac = hmac.New(sha256.New, kDate)
@@ -42,7 +42,7 @@ func TestDerivededSigningKey(t *testing.T) {
 	kRegion := mac.Sum(nil)
 
 	mac = hmac.New(sha256.New, kRegion)
-	mac.Write([]byte("example.com"))
+	mac.Write([]byte("www"))
 	kService := mac.Sum(nil)
 
 	mac = hmac.New(sha256.New, kService)
@@ -53,6 +53,6 @@ func TestDerivededSigningKey(t *testing.T) {
 	actual := req.DerivedSigningKey()
 
 	if !hmac.Equal(expected, actual) {
-		t.Errorf("%s != %s", actual, expected)
+		t.Errorf("\n%v\n != \n%v", actual, expected)
 	}
 }

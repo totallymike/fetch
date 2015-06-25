@@ -40,7 +40,7 @@ func TestAuthorizationHeader(t *testing.T) {
 	now := time.Now()
 
 	algorithm := "AWS4-HMAC-SHA256"
-	credentialScope := formatShortDate(now) + "/us-east-1/example.com/aws4_request"
+	credentialScope := formatShortDate(now) + "/us-east-1/www/aws4_request"
 	signedHeaders := req.SignedHeaders()
 	signature := req.Signature(payload)
 
