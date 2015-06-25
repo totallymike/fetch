@@ -90,6 +90,15 @@ func (req *SignedRequest) HashedCanonicalRequest(payload string) string {
 	return signPayload(req.CanonicalRequest(payload))
 }
 
+func (req *SignedRequest) StringToSign(payload string) string {
+	now := time.Now()
+	return "AWS4-HMAC-SHA256\n" +
+		now.Format("20060102T150405Z") + "\n" +
+		now.Format("20060102") + "/" + req.Config.Region +
+		"/example.com/aws4_request\n" +
+		req.HashedCanonicalRequest(payload)
+}
+
 func (req *SignedRequest) Header() http.Header {
 	return req.request.Header
 }
