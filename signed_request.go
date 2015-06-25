@@ -1,26 +1,26 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"net/http"
 	"regexp"
 	"sort"
 	"strings"
 	"time"
-	"crypto/sha256"
-	"encoding/hex"
-	"io"
-	"crypto/hmac"
 )
 
 type SignedRequest struct {
 	CanonicalURI string
-	client http.Client
-	request http.Request
-	Config *Cfg
+	client       http.Client
+	request      http.Request
+	Config       *Cfg
 }
 
-func NewSignedRequest(method string, url string)(
+func NewSignedRequest(method string, url string) (
 	signedRequest *SignedRequest, err error,
 ) {
 	signedRequest = &SignedRequest{}
