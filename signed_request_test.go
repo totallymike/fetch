@@ -3,6 +3,9 @@ package main
 import (
 	"testing"
 	"time"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 )
 
 func newRequest() (signedRequest *SignedRequest) {
@@ -73,14 +76,58 @@ func TestSignedHeaders(t *testing.T) {
 		t.Errorf("%s != %s\n", actual, expected)
 	}
 }
-/*
-func TestCanonicalRequest(t *testing.T) {
-	t.Skip()
+
+func TestSignedPayload(t *testing.T) {
 	t.Parallel()
 
 	req := newRequest()
 
-	expected := "GET\n/v1/network-hosts\nbaz=foo&\nfoo=bar\n" +
-		"content-type:application/vnd.api+json\nhost:www.example.com"
+	hash := sha256.New()
+	io.WriteString(hash, "")
+	expected := hex.EncodeToString(hash.Sum(nil))
+	actual := req.SignedPayload("")
+
+	if expected != actual {
+		t.Errorf("%s != %s\n", actual, expected)
+	}
 }
-*/
+
+func TestCanonicalRequest(t *testing.T) {
+	t.Parallel()
+
+	req := newRequest()
+
+	signedPayload := signPayload("")
+	expected := "GET\n" +
+		"/v1/network-hosts\n" +
+		"baz=foo&\nfoo=bar\n" +
+		"content-type:application/vnd.api+json\n" +
+		"host:www.example.com\n" +
+		"x-amz-date:" + time.Now().Format("20060102T150405Z") + "\n" +
+		"content-type;host;x-amz-date\n" +
+		signedPayload
+
+	actual := req.CanonicalRequest("")
+	if expected != actual {
+		t.Errorf("%s != %s\n", actual, expected)
+	}
+}
+
+func TestHashedCanonicalRequest(t *testing.T) {
+	// This is a bit of a dummy, as both the
+	// test and the actual code use the same
+	// signing method
+
+	t.Parallel()
+
+	req := newRequest()
+
+	canonicalRequest := req.CanonicalRequest("")
+	expected := signPayload(canonicalRequest)
+
+	actual := req.HashedCanonicalRequest("")
+
+	if expected != actual {
+		t.Errorf("%s != %s\n", actual, expected)
+	}
+}

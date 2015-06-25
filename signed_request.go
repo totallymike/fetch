@@ -7,12 +7,21 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 )
 
 type SignedRequest struct {
 	CanonicalURI string
 	client http.Client
 	request http.Request
+}
+
+func signPayload(payload string) string {
+	hash := sha256.New()
+	io.WriteString(hash, payload)
+	return hex.EncodeToString(hash.Sum(nil))
 }
 
 func NewSignedRequest(method string, url string) (signedRequest *SignedRequest, err error) {
@@ -53,6 +62,28 @@ func (req *SignedRequest) SignedHeaders() string {
 	sort.Strings(signedHeaders)
 
 	return strings.Join(signedHeaders, ";")
+}
+
+func (req *SignedRequest) SignedPayload(payload string) string {
+	return signPayload(payload)
+}
+
+func (req *SignedRequest) CanonicalRequest(payload string) string {
+	return strings.Join(
+		[]string{
+			req.request.Method,
+			req.CanonicalURI,
+			req.CanonicalQueryString(),
+			req.CanonicalHeaders(),
+			req.SignedHeaders(),
+			req.SignedPayload(payload),
+		},
+		"\n",
+	)
+}
+
+func (req *SignedRequest) HashedCanonicalRequest(payload string) string {
+	return signPayload(req.CanonicalRequest(payload))
 }
 
 func (req *SignedRequest) Header() http.Header {
