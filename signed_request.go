@@ -15,9 +15,11 @@ import (
 
 type SignedRequest struct {
 	CanonicalURI string
-	client       http.Client
+	client       *http.Client
 	request      http.Request
+	service      string
 	Config       *Cfg
+	TimeOfRequest time.Time
 }
 
 func NewSignedRequest(method string, url string) (
@@ -32,11 +34,32 @@ func NewSignedRequest(method string, url string) (
 	)
 
 	signedRequest.request = *req
+	signedRequest.TimeOfRequest = time.Now().UTC()
+
+	service := strings.SplitN(req.URL.Host, ".", 2)[0]
+	if strings.ContainsRune(service, ':') {
+		service = strings.SplitN(service, ":", 2)[0]
+	}
+
+	signedRequest.service = service
 
 	req.Header.Add("Content-Type", "application/vnd.api+json")
 	req.Header.Add("Host", req.URL.Host)
-	req.Header.Add("X-AMZ-DATE", time.Now().Format("20060102T150405Z"))
+	req.Header.Add("X-AMZ-DATE", signedRequest.TimeOfRequest.Format("20060102T150405Z"))
 	signedRequest.CanonicalURI = req.URL.Path
+	return
+}
+
+func (req *SignedRequest) Perform(payload string) (response *http.Response, err error) {
+	if req.client == nil {
+		req.client = &http.Client{}
+	}
+
+	canonicalRequest := req.CanonicalRequest(payload)
+	req.AddAuthorizationHeader(payload)
+
+	fmt.Printf("CANONICAL REQUEST:\n%s\n\n", canonicalRequest)
+	response, err = req.client.Do(&req.request)
 	return
 }
 
@@ -86,14 +109,16 @@ func (req *SignedRequest) AddAuthorizationHeader(payload string) {
 }
 
 func (req *SignedRequest) AuthorizationHeader(payload string) string {
-	nowString := formatShortDate(time.Now())
+	nowString := formatShortDate(req.TimeOfRequest)
 	region := req.Config.Region
+	service := strings.SplitN(req.request.URL.Host, ".", 2)[0]
 
 	credentialScope := fmt.Sprintf("%s/%s/%s/aws4_request",
 		nowString,
 		region,
-		"example.com")
+		service)
 
+	fmt.Printf("String To Sign:\n%s\n\n", req.StringToSign(payload))
 	return fmt.Sprintf(
 		"AWS4-HMAC-SHA256 Credential=%s/%s, SignedHeaders=%s, Signature=%s",
 		req.Config.AccessKey,
@@ -107,22 +132,22 @@ func (req *SignedRequest) HashedCanonicalRequest(payload string) string {
 }
 
 func (req *SignedRequest) StringToSign(payload string) string {
-	now := time.Now()
+	now := req.TimeOfRequest
 	return "AWS4-HMAC-SHA256\n" +
 		formatLongDate(now) + "\n" +
 		formatShortDate(now) + "/" + req.Config.Region +
-		"/example.com/aws4_request\n" +
+		"/" + req.service + "/aws4_request\n" +
 		req.HashedCanonicalRequest(payload)
 }
 
 func (req *SignedRequest) DerivedSigningKey() []byte {
-	now := time.Now()
+	now := req.TimeOfRequest
 	secretKey := "AWS4" + req.Config.SecretKey
 	region := req.Config.Region
 
 	kDate := hmacHash([]byte(secretKey), []byte(formatShortDate(now)))
 	kRegion := hmacHash(kDate, []byte(region))
-	kService := hmacHash(kRegion, []byte("example.com"))
+	kService := hmacHash(kRegion, []byte(req.service))
 
 	return hmacHash(kService, []byte("aws4_request"))
 }
@@ -183,7 +208,7 @@ func getCanonicalHeaders(data map[string][]string) string {
 
 		canonicizedHeaders[strings.ToLower(k)] = []string{valStr}
 	}
-	return getCanonicalForm(canonicizedHeaders, ":", "")
+	return getCanonicalForm(canonicizedHeaders, ":", "") + "\n"
 }
 
 func getCanonicalForm(data map[string][]string, kvJoin string, entryJoin string) string {
