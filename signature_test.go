@@ -51,6 +51,7 @@ func TestDerivededSigningKey(t *testing.T) {
 
 	expected := kSigning
 	actual := req.DerivedSigningKey()
+
 	if !hmac.Equal(expected, actual) {
 		t.Errorf("%s != %s", actual, expected)
 	}
