@@ -32,6 +32,18 @@ func NewSignedRequest(method string, url string) (signedRequest *SignedRequest, 
 	return
 }
 
+func (req *SignedRequest) CanonicalQueryString() string {
+	return getCanonicalForm(req.request.URL.Query(), "=", "&")
+}
+
+func (req *SignedRequest) CanonicalHeaders() string {
+	return getCanonicalHeaders(req.request.Header)
+}
+
+func (req *SignedRequest) AddHeader(name string, value string) {
+	req.request.Header.Add(name, value)
+}
+
 func getCanonicalHeaders(data map[string][]string) string {
 	whitespaceTrimPattern := regexp.MustCompile(`\s{2,}`)
 
@@ -73,16 +85,4 @@ func getCanonicalForm(data map[string][]string, kvJoin string, entryJoin string)
 	}
 
 	return strings.Join(queryStrings, fmt.Sprintf("%s\n", entryJoin))
-}
-
-func (req *SignedRequest) CanonicalQueryString() string {
-	return getCanonicalForm(req.request.URL.Query(), "=", "&")
-}
-
-func (req *SignedRequest) CanonicalHeaders() string {
-	return getCanonicalHeaders(req.request.Header)
-}
-
-func (req *SignedRequest) AddHeader(name string, value string) {
-	req.request.Header.Add(name, value)
 }
