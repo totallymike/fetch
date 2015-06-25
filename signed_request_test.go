@@ -61,7 +61,18 @@ func TestCanonicalHeadersWithSpaces(t *testing.T) {
 	}
 }
 
+func TestSignedHeaders(t *testing.T) {
+	t.Parallel()
 
+	req := newRequest()
+
+	expected := "content-type;host;x-amz-date"
+	actual := req.SignedHeaders()
+
+	if expected != actual {
+		t.Errorf("%s != %s\n", actual, expected)
+	}
+}
 /*
 func TestCanonicalRequest(t *testing.T) {
 	t.Skip()

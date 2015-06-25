@@ -37,7 +37,26 @@ func (req *SignedRequest) CanonicalQueryString() string {
 }
 
 func (req *SignedRequest) CanonicalHeaders() string {
-	return getCanonicalHeaders(req.request.Header)
+	return getCanonicalHeaders(req.Header())
+}
+
+func (req *SignedRequest) SignedHeaders() string {
+	headers := req.Header()
+	signedHeaders := make([]string, len(headers))
+
+	i := 0
+	for k := range headers {
+		signedHeaders[i] = strings.ToLower(k)
+		i += 1
+	}
+
+	sort.Strings(signedHeaders)
+
+	return strings.Join(signedHeaders, ";")
+}
+
+func (req *SignedRequest) Header() http.Header {
+	return req.request.Header
 }
 
 func (req *SignedRequest) AddHeader(name string, value string) {
