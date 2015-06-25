@@ -26,7 +26,7 @@ func NewSignedRequest(method string, url string)(
 	signedRequest = &SignedRequest{}
 	signedRequest.Config = Config()
 
-	req, err := http.NewRequest("GET",
+	req, err := http.NewRequest(method,
 		url,
 		nil,
 	)
