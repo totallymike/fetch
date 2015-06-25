@@ -5,10 +5,23 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"flag"
 )
 
 func main() {
-	req, err := NewSignedRequest("GET", "http://localhost:49157/v1/network-hosts")
+
+	access_key := flag.String("access_key", "", "your access key")
+	secret_key := flag.String("secret_key", "", "your secret key")
+
+	flag.Parse()
+
+	os.Setenv("PWNIE_ACCESS_KEY", *access_key)
+	os.Setenv("PWNIE_SECRET_KEY", *secret_key)
+
+
+	url := flag.Arg(0)
+
+	req, err := NewSignedRequest("GET", url)
 
 
 	resp, err := req.Perform("")

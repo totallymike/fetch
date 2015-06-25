@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"net/url"
 )
 
 type SignedRequest struct {
@@ -22,14 +23,16 @@ type SignedRequest struct {
 	TimeOfRequest time.Time
 }
 
-func NewSignedRequest(method string, url string) (
+func NewSignedRequest(method string, requestUrl string) (
 	signedRequest *SignedRequest, err error,
 ) {
 	signedRequest = &SignedRequest{}
 	signedRequest.Config = Config()
 
+	parsedUrl, err := url.Parse(requestUrl)
+
 	req, err := http.NewRequest(method,
-		url,
+		parsedUrl.String(),
 		nil,
 	)
 
