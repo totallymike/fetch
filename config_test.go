@@ -16,7 +16,6 @@ func failTest(t *testing.T, expected interface{}, actual interface{}) {
 }
 
 func TestAccessKey(t *testing.T) {
-	t.Parallel()
 	cfg := Config()
 
 	if cfg.AccessKey != "Foo" {
@@ -25,7 +24,6 @@ func TestAccessKey(t *testing.T) {
 }
 
 func TestSecretKey(t *testing.T) {
-	t.Parallel()
 	cfg := Config()
 
 	if cfg.SecretKey != "Bar" {
