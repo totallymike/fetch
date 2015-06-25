@@ -16,6 +16,7 @@ type SignedRequest struct {
 	CanonicalURI string
 	client http.Client
 	request http.Request
+	Config *Cfg
 }
 
 func signPayload(payload string) string {
@@ -28,6 +29,7 @@ func NewSignedRequest(method string, url string)(
 	signedRequest *SignedRequest, err error,
 ) {
 	signedRequest = &SignedRequest{}
+	signedRequest.Config = Config()
 
 	req, err := http.NewRequest("GET",
 		url,
