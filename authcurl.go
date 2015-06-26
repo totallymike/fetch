@@ -4,25 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
-	"flag"
 )
 
 func main() {
-
-	access_key := flag.String("access_key", "", "your access key")
-	secret_key := flag.String("secret_key", "", "your secret key")
-
-	flag.Parse()
-
-	os.Setenv("PWNIE_ACCESS_KEY", *access_key)
-	os.Setenv("PWNIE_SECRET_KEY", *secret_key)
-
-
-	url := flag.Arg(0)
-
-	req, err := NewSignedRequest("GET", url)
-
+	req, err := NewSignedRequest("GET")
 
 	resp, err := req.Perform("")
 	if err != nil {

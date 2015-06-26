@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 	"net/url"
+	"flag"
+	"crypto/tls"
 )
 
 type SignedRequest struct {
@@ -23,11 +25,13 @@ type SignedRequest struct {
 	TimeOfRequest time.Time
 }
 
-func NewSignedRequest(method string, requestUrl string) (
+func NewSignedRequest(method string) (
 	signedRequest *SignedRequest, err error,
 ) {
 	signedRequest = &SignedRequest{}
 	signedRequest.Config = Config()
+
+	requestUrl := flag.Arg(0)
 
 	parsedUrl, err := url.Parse(requestUrl)
 
@@ -55,7 +59,16 @@ func NewSignedRequest(method string, requestUrl string) (
 
 func (req *SignedRequest) Perform(payload string) (response *http.Response, err error) {
 	if req.client == nil {
-		req.client = &http.Client{}
+		var transport *http.Transport
+		if req.Config.AllowInsecureSsl {
+			transport = &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+		} else {
+			transport = &http.Transport{}
+		}
+
+		req.client = &http.Client{Transport: transport}
 	}
 
 	req.AddAuthorizationHeader(payload)
