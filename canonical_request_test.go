@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
-	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func newRequest() (signedRequest *SignedRequest) {
@@ -44,13 +43,9 @@ func TestCanonicalHeaders(t *testing.T) {
 		"host:www.example.com\n" +
 		"x-amz-date:" + time.Now().UTC().Format("20060102T150405Z") + "\n"
 
-	if req.CanonicalHeaders() != expected {
-		dmp := diffmatchpatch.New()
-		diffs := dmp.DiffMain(req.CanonicalHeaders(), expected, true)
-		for _, d := range diffs {
-			t.Logf(" %v\n", d.Text)
-		}
-		t.Fail()
+	actual := req.CanonicalHeaders()
+	if actual != expected {
+		t.Errorf("%s != %s\n", actual, expected)
 	}
 }
 
@@ -66,12 +61,6 @@ func TestCanonicalHeadersWithSpaces(t *testing.T) {
 
 
 	if req.CanonicalHeaders() != expected {
-		dmp := diffmatchpatch.New()
-		diffs := dmp.DiffMain(req.CanonicalHeaders(), expected, true)
-		for _, d := range diffs {
-			t.Logf("%s\n", d.Text)
-		}
-
 		t.Errorf("\n%s != %s\n", req.CanonicalHeaders(), expected)
 	}
 }
