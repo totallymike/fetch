@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 	"net/url"
-	"flag"
 	"crypto/tls"
+	"github.com/spf13/viper"
 )
 
 type SignedRequest struct {
@@ -25,13 +25,15 @@ type SignedRequest struct {
 	TimeOfRequest time.Time
 }
 
-func NewSignedRequest(method string) (
+func NewSignedRequest(method, requestUrl  string) (
 	signedRequest *SignedRequest, err error,
 ) {
 	signedRequest = &SignedRequest{}
-	signedRequest.Config = Config()
-
-	requestUrl := flag.Arg(0)
+	signedRequest.Config = &Cfg{
+		AccessKey: viper.GetString("access_key"),
+		SecretKey: viper.GetString("secret_key"),
+		Region: viper.GetString("region"),
+	}
 
 	parsedUrl, err := url.Parse(requestUrl)
 

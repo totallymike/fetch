@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
-	"flag"
+	"github.com/spf13/viper"
+	"github.com/totallymike/aws-authenticated-request-thing/commands"
 )
 
 type Cfg struct {
@@ -12,22 +12,20 @@ type Cfg struct {
 	Region string
 }
 
+var config *Cfg
+
 func Config() *Cfg {
+	commands.Execute()
+
 	cfg := &Cfg{}
 
-	access_key := flag.String("access_key", "", "your access key")
-	secret_key := flag.String("secret_key", "", "your secret key")
-	insecure_ssl := flag.Bool("insecure", false, "allow bad ssl certs")
+	insecure_ssl := false
 
-	flag.Parse()
+	cfg.AccessKey = viper.GetString("access_key")
+	cfg.SecretKey = viper.GetString("secret_key")
+	cfg.AllowInsecureSsl = insecure_ssl
 
-	cfg.AccessKey = *access_key
-	cfg.SecretKey = *secret_key
-	cfg.AllowInsecureSsl = *insecure_ssl
-
-	if cfg.Region = os.Getenv("PWNIE_REGION"); cfg.Region == "" {
-		cfg.Region = "us-east-1"
-	}
+	cfg.Region = viper.GetString("Region")
 
 	return cfg
 }

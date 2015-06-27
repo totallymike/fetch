@@ -12,9 +12,9 @@ func setupEnvironment() {
 	secret_key := "foobar"
 	region := "us-east-1"
 
-	os.Setenv("PWNIE_ACCESS_KEY", access_key)
-	os.Setenv("PWNIE_SECRET_KEY", secret_key)
-	os.Setenv("PWNIE_REGION", region)
+	os.Setenv("AUTH_ACCESS_KEY", access_key)
+	os.Setenv("AUTH_SECRET_KEY", secret_key)
+	os.Setenv("AUTH_REGION", region)
 }
 
 func TestAddAuthorizationHeader(t *testing.T) {
@@ -37,7 +37,7 @@ func TestAuthorizationHeader(t *testing.T) {
 
 	payload := ""
 	req := newRequest()
-	now := time.Now()
+	now := time.Now().UTC()
 
 	algorithm := "AWS4-HMAC-SHA256"
 	credentialScope := formatShortDate(now) + "/us-east-1/www/aws4_request"
@@ -46,7 +46,7 @@ func TestAuthorizationHeader(t *testing.T) {
 
 	expected := fmt.Sprintf("%s Credential=%s/%s, SignedHeaders=%s, Signature=%s",
 		algorithm,
-		os.Getenv("PWNIE_ACCESS_KEY"),
+		os.Getenv("AUTH_ACCESS_KEY"),
 		credentialScope,
 		signedHeaders,
 		signature,
