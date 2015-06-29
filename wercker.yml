@@ -42,6 +42,7 @@ build:
     - wercker/gox:
         os: "darwin linux windows"
         arch: "386 amd64"
+        output: ${WERCKER_OUTPUT_DIR}/dist/{{.Dir}}/{{.OS}}_{{.Arch}}
     # Test the project
     - script:
         name: go test
@@ -51,5 +52,5 @@ deploy:
   steps:
     - tcnksm/ghr:
         token: $GITHUB_TOKEN
-        input: dist
+        input: ${WERCKER_OUTPUT_DIR}/dist
         replace: true
