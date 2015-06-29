@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/totallymike/aws-authenticated-request-thing/commands"
+	"github.com/totallymike/fetch/commands"
 )
 
 func main() {
