@@ -42,15 +42,37 @@ build:
     - wercker/gox:
         os: "darwin linux windows"
         arch: "386 amd64"
-        output: ${WERCKER_OUTPUT_DIR}/dist/{{.Dir}}/{{.OS}}_{{.Arch}}
+        output: "{{.Dir}}_{{.OS}}_{{.Arch}}"
     # Test the project
     - script:
         name: go test
         code: |
           go test ./...
+    - script:
+        name: prepare
+        code: |
+          echo $WERCKER_GIT_COMMIT > $WERCKER_OUTPUT_DIR/HEAD
+          mv $WERCKER_OUTPU_DIR/pkg $WERCKER_OUTPUT_DIR/latest
+          cp -r $WERCKER_OUTPUT_DIR/latest $WERCKER_OUTPUT_DIR/$WERCKER_GIT_COMMIT
 deploy:
   steps:
+    - script:
+        name: Set git repository if not set
+        code: |
+          if [ -z "$WERCKER_GIT_REPOSITORY" ]
+          then
+            export WERCKER_GIT_REPOSITORY=fetch
+          fi
     - tcnksm/ghr:
         token: $GITHUB_TOKEN
-        input: ${WERCKER_OUTPUT_DIR}/dist
+        input: dist
         replace: true
+dev:
+  steps:
+    - setup-go-workspace:
+        package-dir: github.com/totallymike/fetch
+    - internal/watch:
+        code: |
+          go get -t
+          go build ./...
+          go test ./...
