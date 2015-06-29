@@ -63,9 +63,13 @@ deploy:
           then
             export WERCKER_GIT_REPOSITORY=fetch
           fi
+    - script:
+        name: ugh
+        code: |
+          ls
     - tcnksm/ghr:
         token: $GITHUB_TOKEN
-        input: dist
+        input: $WERCKER_GIT_COMMIT
         replace: true
 dev:
   steps:
