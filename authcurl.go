@@ -1,26 +1,53 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-	"log"
+	"github.com/totallymike/fetch/commands"
 )
 
 func main() {
-	req, err := NewSignedRequest("GET")
+	commands.Execute()
+	/*
+	var AccessKey string
+	var SecretKey string
 
-	resp, err := req.Perform("")
-	if err != nil {
-		log.Fatal(err)
+	mainCommand := &cobra.Command{
+		Use: "main [url]",
+		Short: "Fetch requests from aws-authenticated endpoints",
+		Long: "Fetch data from the given url",
+		Run: func (cmd *cobra.Command, args []string) {
+			req, err := NewSignedRequest("GET")
+
+			resp, err := req.Perform("")
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			robots, err := ioutil.ReadAll(resp.Body)
+
+			resp.Body.Close()
+
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("%s", robots)
+		},
 	}
 
-	robots, err := ioutil.ReadAll(resp.Body)
+	mainCommand.PersistentFlags().StringVarP(
+		&AccessKey,
+		"access_key",
+		"",
+		"",
+		"your access key to the API")
 
-	resp.Body.Close()
+	mainCommand.PersistentFlags().StringVarP(
+		&SecretKey,
+		"secret_key",
+		"",
+		"",
+		"your secret key to the API")
 
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("%s", robots)
+	mainCommand.Execute()
+	*/
 }
 

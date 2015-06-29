@@ -3,7 +3,7 @@
 # If you want Google's container you would reference google/golang
 # Read more about containers on our dev center
 # http://devcenter.wercker.com/docs/containers/index.html
-box: golang
+box: tcnksm/gox:1.4.2
 # This is the build pipeline. Pipelines are the core of wercker
 # Read more about pipelines on our dev center
 # http://devcenter.wercker.com/docs/pipelines/index.html
@@ -24,7 +24,8 @@ build:
   steps:
     # Sets the go workspace and places you package
     # at the right place in the workspace tree
-    - setup-go-workspace
+    - setup-go-workspace:
+        package-dir: github.com/totallymike/fetch
 
     # Gets the dependencies
     - script:
@@ -42,4 +43,43 @@ build:
     - script:
         name: go test
         code: |
+          go test ./...
+
+    - wercker/gox:
+        os: "darwin linux windows"
+        arch: "386 amd64"
+        output: "{{.Dir}}_{{.OS}}_{{.Arch}}"
+
+    - script:
+        name: prepare
+        code: |
+          echo $WERCKER_GIT_COMMIT > $WERCKER_OUTPUT_DIR/HEAD
+          mv $WERCKER_OUTPU_DIR/pkg $WERCKER_OUTPUT_DIR/latest
+          cp -r $WERCKER_OUTPUT_DIR/latest $WERCKER_OUTPUT_DIR/$WERCKER_GIT_COMMIT
+deploy:
+  steps:
+    - script:
+        name: Set git repository if not set
+        code: |
+          if [ -z "$WERCKER_GIT_REPOSITORY" ]
+          then
+            export WERCKER_GIT_REPOSITORY=fetch
+          fi
+    - script:
+        name: ugh
+        code: |
+          ls
+    - tcnksm/ghr:
+        token: $GITHUB_TOKEN
+        input: $WERCKER_GIT_COMMIT
+        version: v0.1.0
+        replace: true
+dev:
+  steps:
+    - setup-go-workspace:
+        package-dir: github.com/totallymike/fetch
+    - internal/watch:
+        code: |
+          go get -t
+          go build ./...
           go test ./...
