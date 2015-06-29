@@ -56,6 +56,10 @@ func NewSignedRequest(method, requestUrl  string) (
 	req.Header.Add("Host", req.URL.Host)
 	req.Header.Add("X-AMZ-DATE", signedRequest.TimeOfRequest.Format("20060102T150405Z"))
 	signedRequest.CanonicalURI = req.URL.Path
+	if signedRequest.CanonicalURI == "" {
+		signedRequest.CanonicalURI = "/"
+	}
+
 	return
 }
 

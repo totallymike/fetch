@@ -29,9 +29,8 @@ var AuthCurlCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%s", robots)
 
-		fmt.Println(viper.Get("Region"))
+		fmt.Printf("%s", robots)
 	}}
 
 var AccessKey, SecretKey, Region, Service string
