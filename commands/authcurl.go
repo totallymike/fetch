@@ -34,6 +34,7 @@ var AuthCurlCmd = &cobra.Command{
 	}}
 
 var AccessKey, SecretKey, Region, Service string
+var AllowInsecureSsl bool
 
 func InitializeConfig() {
 	viper.SetConfigName("authcurl")
@@ -66,6 +67,10 @@ func InitializeConfig() {
 	if authCmdV.PersistentFlags().Lookup("service").Changed {
 		viper.Set("service", Service)
 	}
+
+	if authCmdV.PersistentFlags().Lookup("allow-insecure-ssl").Changed {
+		viper.Set("allow_insecure_ssl", AllowInsecureSsl)
+	}
 }
 
 func Execute() {
@@ -81,5 +86,7 @@ func init() {
 		&Region, "region", "r", "us-east-1", "The region.  Not terribly useful")
 	AuthCurlCmd.PersistentFlags().StringVarP(
 		&Service, "service", "s", "", "The service name of the endpoint.  Most of the time you won't worry about it")
+	AuthCurlCmd.PersistentFlags().BoolVarP(
+		&AllowInsecureSsl, "allow-insecure-ssl", "k", false, "Allow expired or otherwise insecure SSL certificates")
 	authCmdV = AuthCurlCmd
 }
