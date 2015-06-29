@@ -18,11 +18,12 @@ var AuthCurlCmd = &cobra.Command{
 		InitializeConfig()
 		request, _ := request.NewSignedRequest("GET", strings.Join(args, ""))
 		response, err := request.Perform("")
-		defer response.Body.Close()
 
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer response.Body.Close()
+
 		robots, err := ioutil.ReadAll(response.Body)
 
 		if err != nil {
