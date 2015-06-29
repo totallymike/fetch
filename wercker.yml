@@ -39,15 +39,17 @@ build:
         code: |
           go build ./...
 
-    - wercker/gox:
-        os: "darwin linux windows"
-        arch: "386 amd64"
-        output: "{{.Dir}}_{{.OS}}_{{.Arch}}"
     # Test the project
     - script:
         name: go test
         code: |
           go test ./...
+
+    - wercker/gox:
+        os: "darwin linux windows"
+        arch: "386 amd64"
+        output: "{{.Dir}}_{{.OS}}_{{.Arch}}"
+
     - script:
         name: prepare
         code: |
