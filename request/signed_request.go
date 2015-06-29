@@ -77,7 +77,8 @@ func (req *SignedRequest) Perform(payload string) (response *http.Response, err 
 		req.client = &http.Client{Transport: transport}
 	}
 
-	req.Header().Add("x-amz-content-sha256", req.HashedCanonicalRequest(payload))
+	req.Header().Add("x-amz-content-sha256", req.SignedPayload(payload))
+
 	req.AddAuthorizationHeader(payload)
 
 	fmt.Print(req.Header())
