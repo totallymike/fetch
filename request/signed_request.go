@@ -81,7 +81,6 @@ func (req *SignedRequest) Perform(payload string) (response *http.Response, err 
 
 	req.AddAuthorizationHeader(payload)
 
-	fmt.Print(req.Header())
 	response, err = req.client.Do(&req.request)
 	return
 }
@@ -176,7 +175,7 @@ func (req *SignedRequest) DerivedSigningKey() []byte {
 
 func (req *SignedRequest) Signature(payload string) string {
 	stringToSign := req.StringToSign(payload)
-	fmt.Println(stringToSign)
+
 	hashedSignature := hmacHash(req.DerivedSigningKey(), []byte(stringToSign))
 	return hex.EncodeToString(hashedSignature)
 }
